@@ -8,7 +8,7 @@ export default class Home extends Component {
     return (
       <Container fluid="sm">
         <h1 className="blog-main-title">Welcome to the Strive Blog!</h1>
-        <BlogList />
+        <BlogList data={this.props.data}/>
       </Container>
     );
   }
