@@ -10,15 +10,33 @@ class Blog extends Component {
     blog: {},
     loading: true,
   };
+
+   /* componentDidUpdate =()=>{
+    if(this.props.edited.length>0){
+      this.setState({
+        blog: this.props.edited,
+        loading:false
+      })
+    }
+  }  */
+
+  id = this.props.match.params.id
   componentDidMount() {
     const { id } = this.props.match.params;
-    console.log(this.props.match.params);
+    console.log('edit',this.props.edited);
+    console.log('id', id);
     console.log(this.props.data);
     const blog = this.props.data.find((post) => post._id.toString() === id);
-    if (blog) {
+     if(this.props.edited){
+      this.setState({
+        blog: this.props.edited,
+        loading:false
+      })
+    }
+    else if (!this.props.edited && blog) {
       this.setState({ blog, loading: false });
     } else {
-      this.props.history.push("/404");
+      console.log('error');
     }
   }
 
@@ -74,13 +92,25 @@ class Blog extends Component {
             </div>
 
             <div dangerouslySetInnerHTML={{ __html: blog.content }}></div>
-           <Link to="/">
-           <Button
-            onClick={(e)=>this.deleteBlog(e)} 
-            variant="danger">
-              Delete
-            </Button>
-           </Link>  
+            <div className="d-flex justify-content-between mt-5 pt-5">
+              <div>
+                  <Link to={`/edit/${this.id}`}>
+                    <Button
+                      variant="secondary">
+                        Edit Post
+                      </Button>
+                  </Link> 
+              </div>
+              <div>
+                  <Link to="/">
+                    <Button
+                      onClick={(e)=>this.deleteBlog(e)} 
+                      variant="danger">
+                        Delete
+                      </Button>
+                  </Link> 
+              </div>
+            </div> 
           </Container>
         </div>
       );

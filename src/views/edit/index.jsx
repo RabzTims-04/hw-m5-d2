@@ -1,20 +1,17 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
-import "./styles.css";
- class NewBlogPost extends Component {
-  /* constructor(props) {
-    super(props);
-    this.state = { text: "" };
-    this.handleChange = this.handleChange.bind(this);
-  } */
+import "./style.css";
+
+ class EditBlogPost extends Component {
 
   state={
     blog:{
 	    "category": "",
 	    "title": "",
-	    "cover":"https://avatarfiles.alphacoders.com/896/thumb-89615.png",
+	    "cover":"",
       "content":"",
 	    "readTime": {
 	      "value": 1,
@@ -22,92 +19,60 @@ import "./styles.css";
 	    },
 	    "author": {
 	      "name": "",
-	      "avatar":"https://avatarfiles.alphacoders.com/896/thumb-89615.png"
+	      "avatar":""
 	    }
     }
   }
 
-  postBlog = async (e)=>{
-    e.preventDefault()
-    let formData = new FormData()
-    let avatarFormData = new FormData
-    avatarFormData.append('avatar', this.state.blog.author.image)
-    formData.append('cover', this.state.blog.image)  
+  id=this.props.match.params.id
+
+  componentDidMount() {
+    const { id } = this.props.match.params;
+    console.log('id', id);
+    console.log(this.props.data);
+    const blog = this.props.data.find((post) => post._id.toString() === id);
+    if (blog) {
+      this.setState({ 
+            blog:{
+                "category": blog.category,
+                "title": blog.title,
+                "cover":blog.cover,
+                "content":blog.content,
+                "readTime": {
+                  "value": blog.readTime.value,
+                  "unit": blog.readTime.unit
+                },
+                "author": {
+                  "name": blog.author.name,
+                  "avatar":blog.author.avatar
+                }
+            }
+       });
+    } else {
+      this.props.history.push("/404");
+    }
+  }
+
+  editBlog = async (e)=>{
+      e.preventDefault()
     try {
-      const response = await fetch("http://localhost:3001/blogs",{
-        method:'POST',
+      const response = await fetch(`http://localhost:3001/blogs/${this.id}`,{
+        method:"PUT",
+        body: JSON.stringify(this.state.blog),
         headers:{
           "content-type": "application/json"
-        },
-        body:JSON.stringify({
-          category:this.state.blog.category,
-          title:this.state.blog.title,
-          cover:this.state.blog.cover,
-          content:this.state.blog.content,
-          readTime:{
-            value:this.state.blog.readTime.value,
-            unit: this.state.blog.readTime.unit
-          },
-          author:{
-            name:this.state.blog.author.name,
-            avatar: this.state.blog.author.avatar
-          }
-        })
+        }
       })
-      const addedPost = await response.json()
-      const blogId = await addedPost._id
-
+      const data = await response.json()
       if(response.ok){
-        if(this.state.blog.author.image){
-          try {
-            const postavatar = await fetch("http://localhost:3001/blogs/" + blogId + '/uploadAvatar',{
-              method:'POST',
-              body: avatarFormData,
-            })
-            console.log(await postavatar.json());
-            if(postavatar.ok){
-              const avatarData = await postavatar.json()
-              console.log(avatarData);
-            }
-            
-          } catch (error) {
-            console.log('error uploading avatar image');
-          }
-        }
-        if(this.state.blog.image){
-          try {
-            const postCover = await fetch("http://localhost:3001/blogs/" + blogId + '/uploadCover',{
-              method:'POST',
-              body: formData,
-            })
-            console.log(await postCover.json());
-            if(postCover.ok){
-              const coverData = await postCover.json()
-              console.log(coverData);
-            }
-            
-          } catch (error) {
-            console.log('error uploading cover image');
-          }
-        }
-        alert('Data successfully posted :)')
+        this.props.edited(data)
+        alert('blog post is successfully edited')
         this.setState({
-          blog:{
-
-            "category": "",
-            "title": "",
-            "cover":"",
-            "content":"",
-            "readTime": {
-              "value": 1,
-              "unit": "hours"
-            },
-            "author": {
-              "name": "",
-              "avatar":""
-            }
-          }
+          ...this.state.blog
         })
+      }
+      else{
+        console.log('edit unsuccessful');
       }
       
     } catch (error) {
@@ -118,7 +83,7 @@ import "./styles.css";
   render() {
     return (
       <Container className="new-blog-container">
-        <Form className="mt-5" onSubmit={(e)=>this.postBlog(e)}>
+        <Form className="mt-5" onSubmit={(e)=>this.editBlog(e)}>
           <Form.Group controlId="blog-form" className="mt-3">
             <Form.Label>Title</Form.Label>
             <Form.Control 
@@ -135,21 +100,22 @@ import "./styles.css";
             placeholder="Title" />
           </Form.Group>
 
-          <label className="p-0 d-flex mt-2" for="image">                                     
-            <input 
-              onClick={(e)=> {e.stopPropagation()
-                      return true}}  
-              /* style={{display:'none'}} */
-              type="file"
-              id="image"
-              /* id="image" */
-              onChange={(e) => {this.setState({
-                        blog:{...this.state.blog, 
-                        image: e.target.files[0]}
-                      })
-                      console.log(e.target.files[0])}}
-            />
-          </label>           
+          <Form.Group  className="mt-3">
+            <Form.Label>Cover Image</Form.Label>
+            <Form.Control
+            required 
+            type="text"
+            id="cover"
+            value={this.state.blog.cover}
+            onChange={(e)=> this.setState({
+              blog:{
+                ...this.state.blog,
+                cover: e.target.value
+              }
+            })}
+            size="lg" 
+            placeholder="Link" />
+          </Form.Group>
 
         <div className="d-flex flex-row">
         <div>
@@ -240,24 +206,7 @@ import "./styles.css";
             placeholder="Name" />
           </Form.Group>
 
-          <label className="p-0 d-flex mt-2" for="avatarImage"> 
-          <input 
-              onClick={(e)=> {e.stopPropagation()
-                      return true}}  
-              /* style={{display:'none'}} */
-              type="file"
-              id="avatarImage"
-              onChange={(e) => {this.setState({
-                        blog:{...this.state.blog, 
-                        author:{...this.state.blog.author,
-                          image: e.target.files[0]}
-                        }
-                      })
-                      console.log(e.target.files[0])}}
-            />
-          </label> 
-
-         {/*  <Form.Group  className="mt-3">
+          <Form.Group  className="mt-3">
             <Form.Label>Author's Image</Form.Label>
             <Form.Control 
             type="text"
@@ -275,7 +224,7 @@ import "./styles.css";
             })}
             size="lg" 
             placeholder="Link" />
-          </Form.Group> */}
+          </Form.Group>
 
           <Form.Group  className="mt-3">
             <Form.Label>Blog Content</Form.Label>
@@ -293,34 +242,21 @@ import "./styles.css";
               className="new-blog-content"
             />
           </Form.Group>
-
-          {/* <Form.Group  className="mt-3 invisible">
-            <Form.Label>Cover Image</Form.Label>
-            <Form.Control
-            type="text"
-            id="cover"           
-            onChange={(e)=> this.setState({
-              blog:{
-                ...this.state.blog,
-                cover: 'https://avatarfiles.alphacoders.com/896/thumb-89615.png'
-              }
-            })}
-            size="lg" 
-            placeholder="Link" />
-          </Form.Group> */}
-
           <Form.Group className="d-flex mt-3 justify-content-end">
-            <Button type="reset" size="lg" variant="outline-dark">
-              Reset
-            </Button>
-            <Button
-              type="submit"
-              size="lg"
-              variant="dark"
-              style={{ marginLeft: "1em" }}
-            >
-              Submit
-            </Button>
+            <Link to={`/blog/${this.id}`}>
+              <Button type="reset" size="lg" variant="outline-dark">
+                Back to Blog Page
+              </Button>
+            </Link>
+              <Button
+                  type="submit"
+                  size="lg"
+                  variant="dark"
+                  style={{ marginLeft: "1em" }}
+                >
+                  Submit
+                </Button>
+         
           </Form.Group>
         </Form>
       </Container>
@@ -328,4 +264,4 @@ import "./styles.css";
   }
 }
 
-export default NewBlogPost
+export default EditBlogPost
