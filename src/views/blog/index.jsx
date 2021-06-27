@@ -30,10 +30,6 @@ class Blog extends Component {
       console.log(await this.state.blog);
       let summary = await striptags(this.state.blog.content);
       console.log('Summary1',summary);
-      summary = await summary.replace(/^\s+|\s+$/g, '');
-      console.log('Summary2',summary);
-      summary = await summary.replace(/\s+|\n$/g, ' ');
-      console.log('Summary3',summary);
       const wordCount = await summary.length;
       console.log('wordCount',wordCount);
       const readingTime = await Math.floor(wordCount / 228) + 1
@@ -42,7 +38,6 @@ class Blog extends Component {
         ...this.state,
         readTime:readingTime
       })
-      return wordCount
     }
   }
 

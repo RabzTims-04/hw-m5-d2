@@ -13,10 +13,10 @@ import "./style.css";
 	    "title": "",
 	    "cover":"",
       "content":"",
-	    "readTime": {
+	    /* "readTime": {
 	      "value": 1,
 	      "unit": ""
-	    },
+	    }, */
 	    "author": {
 	      "name": "",
 	      "avatar":""
@@ -38,10 +38,10 @@ import "./style.css";
                 "title": blog.title,
                 "cover":blog.cover,
                 "content":blog.content,
-                "readTime": {
+                /* "readTime": {
                   "value": blog.readTime.value,
                   "unit": blog.readTime.unit
-                },
+                }, */
                 "author": {
                   "name": blog.author.name,
                   "avatar":blog.author.avatar
@@ -117,7 +117,7 @@ import "./style.css";
             placeholder="Link" />
           </Form.Group>
 
-        <div className="d-flex flex-row">
+       {/*  <div className="d-flex flex-row">
         <div>
           <Form.Group  className="mt-3">
             <Form.Label>Read Time</Form.Label>
@@ -163,7 +163,7 @@ import "./style.css";
             </Form.Control>
           </Form.Group>
          </div>
-        </div>
+        </div> */}
 
           <Form.Group controlId="blog-category" className="mt-3">
             <Form.Label>Category</Form.Label>

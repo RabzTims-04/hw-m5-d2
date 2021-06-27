@@ -19,10 +19,10 @@ import "./styles.css";
 	    "title": "",
 	    "cover":"https://avatarfiles.alphacoders.com/896/thumb-89615.png",
       "content":"",
-	    "readTime": {
+	    /* "readTime": {
 	      "value": 1,
 	      "unit": ""
-	    },
+	    }, */
 	    "author": {
 	      "name": "",
 	      "avatar":"https://avatarfiles.alphacoders.com/896/thumb-89615.png"
@@ -47,10 +47,10 @@ import "./styles.css";
           title:this.state.blog.title,
           cover:this.state.blog.cover,
           content:this.state.blog.content,
-          readTime:{
+          /* readTime:{
             value:this.state.blog.readTime.value,
             unit: this.state.blog.readTime.unit
-          },
+          }, */
           author:{
             name:this.state.blog.author.name,
             avatar: this.state.blog.author.avatar
@@ -101,10 +101,10 @@ import "./styles.css";
             "title": "",
             "cover":"",
             "content":"",
-            "readTime": {
+            /* "readTime": {
               "value": 1,
               "unit": "hours"
-            },
+            }, */
             "author": {
               "name": "",
               "avatar":""
@@ -162,7 +162,7 @@ import "./styles.css";
             Upload Cover
           </Button>          
 
-        <div className="d-flex flex-row">
+        {/* <div className="d-flex flex-row">
         <div>
           <Form.Group  className="mt-3">
             <Form.Label>Read Time</Form.Label>
@@ -208,7 +208,7 @@ import "./styles.css";
             </Form.Control>
           </Form.Group>
          </div>
-        </div>
+        </div> */}
 
           <Form.Group controlId="blog-category" className="mt-3">
             <Form.Label>Category</Form.Label>
