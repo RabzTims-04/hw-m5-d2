@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { createRef } from "react";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
@@ -10,6 +11,8 @@ import "./styles.css";
     this.handleChange = this.handleChange.bind(this);
   } */
 
+  ref = createRef()
+  avatarRef = createRef()
   state={
     blog:{
 	    "category": "",
@@ -139,9 +142,10 @@ import "./styles.css";
             <input 
               onClick={(e)=> {e.stopPropagation()
                       return true}}  
-              /* style={{display:'none'}} */
+              hidden
               type="file"
               id="image"
+              ref={this.ref}
               /* id="image" */
               onChange={(e) => {this.setState({
                         blog:{...this.state.blog, 
@@ -149,7 +153,14 @@ import "./styles.css";
                       })
                       console.log(e.target.files[0])}}
             />
-          </label>           
+          </label> 
+          <Button
+            onClick={()=> this.ref.current.click()}
+            variant="dark"
+            className="mt-3"
+          >
+            Upload Cover
+          </Button>          
 
         <div className="d-flex flex-row">
         <div>
@@ -245,6 +256,8 @@ import "./styles.css";
               onClick={(e)=> {e.stopPropagation()
                       return true}}  
               /* style={{display:'none'}} */
+              ref={this.avatarRef}
+              hidden
               type="file"
               id="avatarImage"
               onChange={(e) => {this.setState({
@@ -256,6 +269,14 @@ import "./styles.css";
                       console.log(e.target.files[0])}}
             />
           </label> 
+
+          <Button
+            onClick={()=> this.avatarRef.current.click()}
+            variant="dark"
+            className="mt-3"
+          >
+            Upload Avatar
+          </Button> 
 
          {/*  <Form.Group  className="mt-3">
             <Form.Label>Author's Image</Form.Label>

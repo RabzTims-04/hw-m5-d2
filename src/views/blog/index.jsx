@@ -7,6 +7,7 @@ import posts from "../../data/posts.json";
 import "./styles.css";
 class Blog extends Component {
   state = {
+    comments:[],
     blog: {},
     loading: true,
   };
@@ -20,8 +21,30 @@ class Blog extends Component {
     }
   }  */
 
+  fetchComments = async ()=>{
+    console.log('comments ID',this.props.match.params.id);
+    try {
+      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments`
+      const response = await fetch(url)
+      const data = await response.json()
+      if(response.ok){
+        this.setState({
+          ...this.state,
+          comments:data
+        })
+      }
+      else{
+        console.log('there is error in fetching comments');
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   id = this.props.match.params.id
   componentDidMount() {
+    this.fetchComments()
     const { id } = this.props.match.params;
     console.log('edit',this.props.edited);
     console.log('id', id);
@@ -29,12 +52,16 @@ class Blog extends Component {
     const blog = this.props.data.find((post) => post._id.toString() === id);
      if(this.props.edited){
       this.setState({
+        ...this.state,
         blog: this.props.edited,
         loading:false
       })
     }
     else if (!this.props.edited && blog) {
-      this.setState({ blog, loading: false });
+      this.setState({
+        ...this.state, 
+        blog, 
+        loading: false });
     } else {
       console.log('error');
     }
@@ -42,7 +69,7 @@ class Blog extends Component {
 
   deleteBlog = async (e)=>{
     try {
-      const response = await fetch(`http://localhost:3001/blogs/${this.state.blog._id}`,{
+      const response = await fetch(`http://localhost:3001/blogs/${this.props.match.params.id}`,{
         method:"DELETE"
       })
       if(response.ok){
@@ -111,6 +138,15 @@ class Blog extends Component {
                   </Link> 
               </div>
             </div> 
+            <div className="mt-5">
+              {this.state.comments.length? this.state.comments.map( comment =>
+                <>
+                  <p>{comment.text}</p>
+                  <span>{comment.author}</span>
+                </>
+              )
+            :<p>Be first to comment</p>}
+            </div>
           </Container>
         </div>
       );
