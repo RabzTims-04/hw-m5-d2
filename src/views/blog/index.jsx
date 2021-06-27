@@ -7,7 +7,9 @@ import BlogAuthor from "../../components/blog/blog-author";
 /* import { AvatarGenerator } from 'random-avatar-generator'; */
 import "./styles.css";
 class Blog extends Component {
+
   state = {
+    editModeId:'',
     deletedComment:'',
     readTime:0,
     editComments:{
@@ -26,7 +28,7 @@ class Blog extends Component {
     componentDidUpdate =(prevProps, prevState)=>{
       console.log('this state deletedCOMMENTS', this.state.deletedComment);
       console.log('PREVSTATE COMMENTS', prevState.comments);
-     if((prevState.commentPost.author !== this.state.commentPost.author) || (prevState.commentPost.text !== this.state.commentPost.text) || (this.state.deletedComment && !this.state.comments.includes(this.state.deletedComment._id))){
+     if((prevState.commentPost.author !== this.state.commentPost.author) || (prevState.commentPost.text !== this.state.commentPost.text) || (prevState.editComments.author !== this.state.editComments.author) || (prevState.editComments.text !== this.state.editComments.text) || (this.state.deletedComment && !this.state.comments.includes(this.state.deletedComment._id))){
       this.setState({
         ...this.state,
         deletedComment:''
@@ -144,7 +146,7 @@ class Blog extends Component {
     this.htmlToSummary()
   }
 
-  editComment = async (e)=>{
+   editComment = async (e)=>{
     try {
       const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments/${e.currentTarget.id}`
       const response = await fetch(url,{
@@ -158,7 +160,12 @@ class Blog extends Component {
       if (response.ok) {
         alert('comment edited successfully')
         this.setState({
-          
+          ...this.state,
+          editMode:'',
+          editComments:{
+            'author':'',
+            'text':''
+          }
         })
       } else {
         console.log('error editing comment');        
@@ -166,7 +173,7 @@ class Blog extends Component {
     } catch (error) {
       console.log(error);
     }
-  }
+  } 
 
   deleteComment = async (e)=>{
     console.log('current',e.currentTarget.id);
@@ -308,8 +315,73 @@ class Blog extends Component {
                         <div className="mt-5">
                           <h6>{this.state.comments.length} {this.state.comments.length === 1?'Comment':'Comments'}</h6>
                           {this.state.comments.length ? this.state.comments.map( comment =>
-                              <div key="comment._id" className="mb-3">
+                              <div key={comment._id} className="mb-3">                      
                                 <Card>
+                                  {this.state.editMode === comment._id
+
+                                  ?<>
+                                  <Card.Header>
+                                  <div className="d-flex justify-content-between">
+                                    <div>
+                                      <Form.Group className="my-3">
+                                        <Form.Label>Name</Form.Label>
+                                        <Form.Control 
+                                        id="author"
+                                        required
+                                        value={this.state.editComments.author}
+                                        onChange={(e)=> this.setState({
+                                          ...this.state,
+                                          editComments:{
+                                            ...this.state.editComments,
+                                            author: e.target.value
+                                          }
+                                        })}
+                                        size="lg" 
+                                        placeholder="Author Name" />
+                                      </Form.Group>
+                                    </div>                                      
+                                    <div>                                    
+                                      <svg id={comment._id} onClick={(e)=>this.setState({
+                                            ...this.state,
+                                            editMode:''
+                                          })} style={{color:'red'}} focusable="false" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+                                    </div>
+                                  </div>                                   
+                                </Card.Header>
+                                <Card.Body>
+                                  <div className="d-flex flex-row justify-content-between">
+                                    <div className="d-flex">
+                                      <div className="pr-5">
+                                        <img className="commentAvatar" src ={`https://i.pravatar.cc/150?u=${comment._id}`} alt="avatar"/>
+                                      </div>
+                                      <div>
+                                       <Form.Group>
+                                          <Form.Label>Comment</Form.Label>
+                                          <Form.Control
+                                          id="text"
+                                          value={this.state.editComments.text}
+                                          onChange={(e)=> this.setState({
+                                            ...this.state,
+                                            editComments:{
+                                              ...this.state.editComments,
+                                              text:e.target.value
+                                            }
+                                          })}
+                                          as="textarea"
+                                          rows={3} />
+                                        </Form.Group>
+                                      </div>
+                                    </div>
+                                    <div className="">
+                                        <svg id={comment._id} onClick={(e)=>this.editComment(e)} xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-save" viewBox="0 0 16 16">
+                                          <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+                                        </svg>
+                                    </div>
+                                  </div>                                
+                                </Card.Body>
+                                </>
+
+                                  :<>
                                   <Card.Header>
                                     <div className="d-flex justify-content-between">
                                       <div>
@@ -330,13 +402,23 @@ class Blog extends Component {
                                           <Card.Text>{comment.text}</Card.Text>
                                         </div>
                                       </div>
-                                      <div className="">
-                                          <svg onClick={(e)=>this.editComment(e)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-supported-dps="24x24" fill="currentColor" className="mercado-match" width="20" height="20" focusable="false">
+                                      <div className="">                                      
+                                          <svg id={comment._id} onClick={(e)=>this.setState({
+                                            ...this.state,
+                                            editMode:e.currentTarget.id,
+                                            editComments:{
+                                              author:comment.author,
+                                              text:comment.text
+                                            }
+                                          })} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-supported-dps="24x24" fill="currentColor" className="mercado-match" width="20" height="20" focusable="false">
                                           <path d="M21.13 2.86a3 3 0 00-4.17 0l-13 13L2 22l6.19-2L21.13 7a3 3 0 000-4.16zM6.77 18.57l-1.35-1.34L16.64 6 18 7.35z"></path>
                                           </svg> 
                                       </div>
                                     </div>                                
                                   </Card.Body>
+                                  </>
+                                }
+                                  
                                 </Card>
                               </div>
                             )
