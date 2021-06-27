@@ -4,11 +4,13 @@ import { Container, Image, Button, Form, Tabs, Tab, Card } from "react-bootstrap
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import BlogAuthor from "../../components/blog/blog-author";
+import { BACKEND_URL } from "../../const/env";
 /* import { AvatarGenerator } from 'random-avatar-generator'; */
 import "./styles.css";
 class Blog extends Component {
 
   state = {
+    nextPage:false,
     editModeId:'',
     deletedComment:'',
     readTime:0,
@@ -25,6 +27,8 @@ class Blog extends Component {
     loading: true,
   };
 
+  url = 'https://m5-blogpost.herokuapp.com/blogs'
+
     componentDidUpdate =(prevProps, prevState)=>{
       console.log('this state deletedCOMMENTS', this.state.deletedComment);
       console.log('PREVSTATE COMMENTS', prevState.comments);
@@ -35,6 +39,10 @@ class Blog extends Component {
       })
       this.fetchComments()
     } 
+
+    if(this.state.nextPage){
+      window.location.replace('http://localhost:3000')
+    }
   } 
 
  /*  AvatarGenerator = ()=>{
@@ -62,7 +70,7 @@ class Blog extends Component {
   fetchComments = async ()=>{
     console.log('comments ID',this.props.match.params.id);
     try {
-      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments`
+      const url = `${this.url}/${this.props.match.params.id}/comments`
       const response = await fetch(url)
       const data = await response.json()
       if(response.ok){
@@ -93,7 +101,7 @@ class Blog extends Component {
 
   postComment = async ()=>{
     try {
-      const url =`http://localhost:3001/blogs/${this.props.match.params.id}/comments`
+      const url =`${this.url}/${this.props.match.params.id}/comments`
       const response = await fetch(url, {
         method:'POST',
         body:JSON.stringify(this.state.commentPost),
@@ -148,7 +156,7 @@ class Blog extends Component {
 
    editComment = async (e)=>{
     try {
-      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments/${e.currentTarget.id}`
+      const url = `${this.url}/${this.props.match.params.id}/comments/${e.currentTarget.id}`
       const response = await fetch(url,{
         method:'PUT',
         body:JSON.stringify(this.state.editComments),
@@ -179,7 +187,7 @@ class Blog extends Component {
     console.log('current',e.currentTarget.id);
     console.log('id',e.target.id);
     try {
-      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments/${e.currentTarget.id}`
+      const url = `${this.url}/${this.props.match.params.id}/comments/${e.currentTarget.id}`
       const response = await fetch(url,{
         method:'DELETE'
       })
@@ -203,11 +211,15 @@ class Blog extends Component {
 
   deleteBlog = async (e)=>{
     try {
-      const response = await fetch(`http://localhost:3001/blogs/${this.props.match.params.id}`,{
+      const response = await fetch(`${this.url}/${this.props.match.params.id}`,{
         method:"DELETE"
       })
       if(response.ok){
         alert('successfully deleted')
+        this.setState({
+          ...this.state,
+          nextPage:true
+        })
       }
       else{
         console.log('error in deleting');
@@ -263,13 +275,14 @@ class Blog extends Component {
                   </Link> 
               </div>
               <div>
-                  <Link to="/">
+                <Link>
                     <Button
                       onClick={(e)=>this.deleteBlog(e)} 
                       variant="danger">
                         Delete
                       </Button>
-                  </Link> 
+                  </Link>
+                   
               </div>
             </div> 
 

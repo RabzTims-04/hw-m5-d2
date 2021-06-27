@@ -3,6 +3,7 @@ import { createRef } from "react";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
+import { BACKEND_URL } from "../../const/env";
 import "./styles.css";
  class NewBlogPost extends Component {
   /* constructor(props) {
@@ -14,6 +15,7 @@ import "./styles.css";
   ref = createRef()
   avatarRef = createRef()
   state={
+    nextPage:false,
     blog:{
 	    "category": "",
 	    "title": "",
@@ -30,6 +32,8 @@ import "./styles.css";
     }
   }
 
+  url = 'https://m5-blogpost.herokuapp.com/blogs'
+
   postBlog = async (e)=>{
     e.preventDefault()
     let formData = new FormData()
@@ -37,7 +41,7 @@ import "./styles.css";
     avatarFormData.append('avatar', this.state.blog.author.image)
     formData.append('cover', this.state.blog.image)  
     try {
-      const response = await fetch("http://localhost:3001/blogs",{
+      const response = await fetch(this.url,{
         method:'POST',
         headers:{
           "content-type": "application/json"
@@ -63,7 +67,7 @@ import "./styles.css";
       if(response.ok){
         if(this.state.blog.author.image){
           try {
-            const postavatar = await fetch("http://localhost:3001/blogs/" + blogId + '/uploadAvatar',{
+            const postavatar = await fetch(this.url + '/' + blogId + '/uploadAvatar',{
               method:'POST',
               body: avatarFormData,
             })
@@ -79,7 +83,7 @@ import "./styles.css";
         }
         if(this.state.blog.image){
           try {
-            const postCover = await fetch("http://localhost:3001/blogs/" + blogId + '/uploadCover',{
+            const postCover = await fetch(this.url + '/' + blogId + '/uploadCover',{
               method:'POST',
               body: formData,
             })
@@ -111,6 +115,7 @@ import "./styles.css";
             }
           }
         })
+        window.location.replace('http://localhost:3000')
       }
       
     } catch (error) {

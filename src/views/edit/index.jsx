@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
+import { BACKEND_URL } from "../../const/env";
 import "./style.css";
 
  class EditBlogPost extends Component {
@@ -23,6 +24,8 @@ import "./style.css";
 	    }
     }
   }
+
+  url = 'https://m5-blogpost.herokuapp.com/blogs'
 
   id=this.props.match.params.id
 
@@ -56,7 +59,7 @@ import "./style.css";
   editBlog = async (e)=>{
       e.preventDefault()
     try {
-      const response = await fetch(`http://localhost:3001/blogs/${this.id}`,{
+      const response = await fetch(`${this.url}/${this.id}`,{
         method:"PUT",
         body: JSON.stringify(this.state.blog),
         headers:{
