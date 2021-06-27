@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Container, Image, Button } from "react-bootstrap";
+import { Container, Image, Button, Form } from "react-bootstrap";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import BlogAuthor from "../../components/blog/blog-author";
@@ -7,19 +7,22 @@ import posts from "../../data/posts.json";
 import "./styles.css";
 class Blog extends Component {
   state = {
+    commentPost:{
+      'author':'',
+      'text':''
+    },
     comments:[],
     blog: {},
     loading: true,
   };
 
-   /* componentDidUpdate =()=>{
-    if(this.props.edited.length>0){
-      this.setState({
-        blog: this.props.edited,
-        loading:false
-      })
-    }
-  }  */
+    componentDidUpdate =(prevProps, prevState)=>{
+      console.log('PREVPROPS', prevProps);
+      console.log('PREVSTATE', prevState);
+     if((prevState.commentPost.author !== this.state.commentPost.author) || (prevState.commentPost.text !== this.state.commentPost.text) ){
+      this.fetchComments()
+    } 
+  } 
 
   fetchComments = async ()=>{
     console.log('comments ID',this.props.match.params.id);
@@ -37,6 +40,46 @@ class Blog extends Component {
         console.log('there is error in fetching comments');
       }
       
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  commentInputHandle = (e)=>{
+    const id= e.target.id
+    this.setState({
+      ...this.state,
+      commentPost:{
+        ...this.state.commentPost,
+        [id]: e.target.value
+      }
+    })
+  }
+
+  postComment = async ()=>{
+    try {
+      const url =`http://localhost:3001/blogs/${this.props.match.params.id}/comments`
+      const response = await fetch(url, {
+        method:'POST',
+        body:JSON.stringify(this.state.commentPost),
+        headers:{
+          'content-type': 'application/json'
+        }
+      })
+      const data = await response.json()
+      if(response.ok){
+        alert('comment posted successfully')
+        this.setState({
+          ...this.state,
+          commentPost:{
+            'author':'',
+            'text':''
+          }
+        })
+      }
+      else{
+        console.log('error while posting new comment');
+      }
     } catch (error) {
       console.log(error);
     }
@@ -139,7 +182,7 @@ class Blog extends Component {
               </div>
             </div> 
             <div className="mt-5">
-              {this.state.comments.length? this.state.comments.map( comment =>
+              {this.state.comments.length ? this.state.comments.map( comment =>
                 <>
                   <p>{comment.text}</p>
                   <span>{comment.author}</span>
@@ -147,6 +190,36 @@ class Blog extends Component {
               )
             :<p>Be first to comment</p>}
             </div>
+            <div>
+                <Form.Group className="mt-3">
+                <Form.Label>Author Name</Form.Label>
+                <Form.Control 
+                id="author"
+                required
+                value={this.state.commentPost.author}
+                onChange={(e)=> this.commentInputHandle(e)}
+                size="lg" 
+                placeholder="Author Name" />
+              </Form.Group>
+
+              <Form.Group>
+                <Form.Label>Comment</Form.Label>
+                <Form.Control 
+                id="text"
+                value={this.state.commentPost.text}
+                onChange={(e)=> this.commentInputHandle(e)}
+                as="textarea"
+                placeholder="Comment" 
+                rows={3} />
+              </Form.Group>
+
+            </div>
+            <Button
+                       onClick={(e)=> this.postComment(e)}
+                       className="mt-4" 
+                      variant="primary">
+                        Post Comment
+                      </Button>
           </Container>
         </div>
       );
