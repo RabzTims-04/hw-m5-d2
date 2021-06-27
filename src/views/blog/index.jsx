@@ -1,13 +1,19 @@
 import React, { Component } from "react";
 import striptags from "striptags";
-import { Container, Image, Button, Form } from "react-bootstrap";
+import { Container, Image, Button, Form, Tabs, Tab, Card } from "react-bootstrap";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import BlogAuthor from "../../components/blog/blog-author";
+/* import { AvatarGenerator } from 'random-avatar-generator'; */
 import "./styles.css";
 class Blog extends Component {
   state = {
+    deletedComment:'',
     readTime:0,
+    editComments:{
+      'author':'',
+      'text':''
+    },
     commentPost:{
       'author':'',
       'text':''
@@ -18,12 +24,22 @@ class Blog extends Component {
   };
 
     componentDidUpdate =(prevProps, prevState)=>{
-      console.log('PREVPROPS', prevProps);
-      console.log('PREVSTATE', prevState);
-     if((prevState.commentPost.author !== this.state.commentPost.author) || (prevState.commentPost.text !== this.state.commentPost.text) ){
+      console.log('this state deletedCOMMENTS', this.state.deletedComment);
+      console.log('PREVSTATE COMMENTS', prevState.comments);
+     if((prevState.commentPost.author !== this.state.commentPost.author) || (prevState.commentPost.text !== this.state.commentPost.text) || (this.state.deletedComment && !this.state.comments.includes(this.state.deletedComment._id))){
+      this.setState({
+        ...this.state,
+        deletedComment:''
+      })
       this.fetchComments()
     } 
   } 
+
+ /*  AvatarGenerator = ()=>{
+    const generator = new AvatarGenerator()
+    console.log(generator);
+    return generator.generateRandomAvatar() 
+  } */
 
   htmlToSummary = async () => {
     if(this.state.blog){      
@@ -50,7 +66,7 @@ class Blog extends Component {
       if(response.ok){
         this.setState({
           ...this.state,
-          comments:data
+          comments:data.reverse()
         })
       }
       else{
@@ -128,6 +144,56 @@ class Blog extends Component {
     this.htmlToSummary()
   }
 
+  editComment = async (e)=>{
+    try {
+      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments/${e.currentTarget.id}`
+      const response = await fetch(url,{
+        method:'PUT',
+        body:JSON.stringify(this.state.editComments),
+        headers:{
+          'content-type':'application/json'
+        }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        alert('comment edited successfully')
+        this.setState({
+          
+        })
+      } else {
+        console.log('error editing comment');        
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  deleteComment = async (e)=>{
+    console.log('current',e.currentTarget.id);
+    console.log('id',e.target.id);
+    try {
+      const url = `http://localhost:3001/blogs/${this.props.match.params.id}/comments/${e.currentTarget.id}`
+      const response = await fetch(url,{
+        method:'DELETE'
+      })
+      console.log(await response);
+      const data = await response.json()
+      if(response.ok){
+        alert('comment deleted successfully')
+        this.setState({
+          ...this.state,
+          deletedComment: data
+        })
+      }
+      else{
+        console.log('comment cannot be deleted');
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   deleteBlog = async (e)=>{
     try {
       const response = await fetch(`http://localhost:3001/blogs/${this.props.match.params.id}`,{
@@ -199,45 +265,94 @@ class Blog extends Component {
                   </Link> 
               </div>
             </div> 
-            <div className="mt-5">
-              {this.state.comments.length ? this.state.comments.map( comment =>
-                <>
-                  <p>{comment.text}</p>
-                  <span>{comment.author}</span>
-                </>
-              )
-            :<p>Be first to comment</p>}
-            </div>
-            <div>
-                <Form.Group className="mt-3">
-                <Form.Label>Author Name</Form.Label>
-                <Form.Control 
-                id="author"
-                required
-                value={this.state.commentPost.author}
-                onChange={(e)=> this.commentInputHandle(e)}
-                size="lg" 
-                placeholder="Author Name" />
-              </Form.Group>
 
-              <Form.Group>
-                <Form.Label>Comment</Form.Label>
-                <Form.Control 
-                id="text"
-                value={this.state.commentPost.text}
-                onChange={(e)=> this.commentInputHandle(e)}
-                as="textarea"
-                placeholder="Comment" 
-                rows={3} />
-              </Form.Group>
+            {/* Comments section */}
 
-            </div>
-            <Button
-                       onClick={(e)=> this.postComment(e)}
-                       className="mt-4" 
-                      variant="primary">
-                        Post Comment
-                      </Button>
+            <div className="mt-5 blog-comments">
+                <Tabs defaultActiveKey="Comments" id="uncontrolled-tab-example">
+                  <Tab eventKey="Comments" title="Comments">
+                      <div className="mt-5">                                             
+                        <div>
+                            <Form.Group className="my-3">
+                            <Form.Label>Name</Form.Label>
+                            <Form.Control 
+                            id="author"
+                            required
+                            value={this.state.commentPost.author}
+                            onChange={(e)=> this.commentInputHandle(e)}
+                            size="lg" 
+                            placeholder="Author Name" />
+                          </Form.Group>
+
+                          <Form.Group>
+                            <Form.Label>Comment</Form.Label>
+                            <Form.Control 
+                            id="text"
+                            value={this.state.commentPost.text}
+                            onChange={(e)=> this.commentInputHandle(e)}
+                            as="textarea"
+                            placeholder="Comment" 
+                            rows={3} />
+                          </Form.Group>
+
+                        </div>
+                        <Button
+                            onClick={(e)=> this.postComment(e)}
+                            className="mt-4 mb-4" 
+                            variant="primary">
+                                Post Comment
+                        </Button>
+
+                        <hr/>
+
+                        <div className="mt-5">
+                          <h6>{this.state.comments.length} {this.state.comments.length === 1?'Comment':'Comments'}</h6>
+                          {this.state.comments.length ? this.state.comments.map( comment =>
+                              <div key="comment._id" className="mb-3">
+                                <Card>
+                                  <Card.Header>
+                                    <div className="d-flex justify-content-between">
+                                      <div>
+                                        <h5>By: {comment.author}</h5>
+                                      </div>                                      
+                                      <div>
+                                        <svg id={comment._id} onClick={(e)=>this.deleteComment(e)} style={{color:'red'}} focusable="false" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+                                      </div>
+                                    </div>                                   
+                                  </Card.Header>
+                                  <Card.Body>
+                                    <div className="d-flex flex-row justify-content-between">
+                                      <div className="d-flex">
+                                        <div className="pr-5">
+                                          <img className="commentAvatar" src ={`https://i.pravatar.cc/150?u=${comment._id}`} alt="avatar"/>
+                                        </div>
+                                        <div>
+                                          <Card.Text>{comment.text}</Card.Text>
+                                        </div>
+                                      </div>
+                                      <div className="">
+                                          <svg onClick={(e)=>this.editComment(e)} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-supported-dps="24x24" fill="currentColor" className="mercado-match" width="20" height="20" focusable="false">
+                                          <path d="M21.13 2.86a3 3 0 00-4.17 0l-13 13L2 22l6.19-2L21.13 7a3 3 0 000-4.16zM6.77 18.57l-1.35-1.34L16.64 6 18 7.35z"></path>
+                                          </svg> 
+                                      </div>
+                                    </div>                                
+                                  </Card.Body>
+                                </Card>
+                              </div>
+                            )
+                          :<p>Be first to comment</p>}
+                        </div>
+                      </div>
+                  </Tab>
+
+                  <Tab eventKey="profile" title="Profile">
+                  
+                  </Tab>
+                  <Tab eventKey="contact" title="Contact" disabled>
+                  
+                  </Tab>
+                </Tabs>
+          </div>
           </Container>
         </div>
       );
