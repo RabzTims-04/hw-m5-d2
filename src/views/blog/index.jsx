@@ -1,12 +1,13 @@
 import React, { Component } from "react";
+import striptags from "striptags";
 import { Container, Image, Button, Form } from "react-bootstrap";
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import BlogAuthor from "../../components/blog/blog-author";
-import posts from "../../data/posts.json";
 import "./styles.css";
 class Blog extends Component {
   state = {
+    readTime:0,
     commentPost:{
       'author':'',
       'text':''
@@ -23,6 +24,27 @@ class Blog extends Component {
       this.fetchComments()
     } 
   } 
+
+  htmlToSummary = async () => {
+    if(this.state.blog){      
+      console.log(await this.state.blog);
+      let summary = await striptags(this.state.blog.content);
+      console.log('Summary1',summary);
+      summary = await summary.replace(/^\s+|\s+$/g, '');
+      console.log('Summary2',summary);
+      summary = await summary.replace(/\s+|\n$/g, ' ');
+      console.log('Summary3',summary);
+      const wordCount = await summary.length;
+      console.log('wordCount',wordCount);
+      const readingTime = await Math.floor(wordCount / 228) + 1
+      console.log('readingTime', readingTime);
+      this.setState({
+        ...this.state,
+        readTime:readingTime
+      })
+      return wordCount
+    }
+  }
 
   fetchComments = async ()=>{
     console.log('comments ID',this.props.match.params.id);
@@ -108,6 +130,7 @@ class Blog extends Component {
     } else {
       console.log('error');
     }
+    this.htmlToSummary()
   }
 
   deleteBlog = async (e)=>{
@@ -140,7 +163,7 @@ class Blog extends Component {
 }
 
   render() {
-    const { loading, blog } = this.state;
+    let { loading, blog } = this.state;
     if (loading) {
       return <div>loading</div>;
     } else {
@@ -157,7 +180,7 @@ class Blog extends Component {
               <div className="blog-details-info">
                 <div>{this.currentDate(blog.createdAt)}</div>
                 <div>{this.currentTime(blog.createdAt)}</div>
-                <div>{`${blog.readTime.value} ${blog.readTime.unit} read`}</div>
+                <div>{`${this.state.readTime} ${this.state.readTime === 1? 'minute': 'minutes'} read`}</div>
               </div>
             </div>
 

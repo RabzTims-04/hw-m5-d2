@@ -33,7 +33,7 @@ import "./styles.css";
   postBlog = async (e)=>{
     e.preventDefault()
     let formData = new FormData()
-    let avatarFormData = new FormData
+    let avatarFormData = new FormData()
     avatarFormData.append('avatar', this.state.blog.author.image)
     formData.append('cover', this.state.blog.image)  
     try {
