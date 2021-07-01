@@ -3,8 +3,10 @@ import { createRef } from "react";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
-import { BACKEND_URL } from "../../const/env";
 import "./styles.css";
+
+const {REACT_APP_BACKEND_URL} = process.env
+
  class NewBlogPost extends Component {
   /* constructor(props) {
     super(props);
@@ -32,7 +34,7 @@ import "./styles.css";
     }
   }
 
-  url = 'https://m5-blogpost.herokuapp.com/blogs'
+  url = `${REACT_APP_BACKEND_URL}/blogs`
 
   postBlog = async (e)=>{
     e.preventDefault()

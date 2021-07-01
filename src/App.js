@@ -12,6 +12,7 @@ function App() {
 
   const [blog, setBlog] = useState([])
   const [editPost, setEditPost] = useState(null)
+  const [editCover, setEditCover] = useState(null)
 
   const updated =(val)=>{
     setBlog(val)
@@ -21,13 +22,17 @@ function App() {
     setEditPost(editVal)
   }
 
+  const editedImgcover = (cover) =>{
+    setEditCover(cover)
+  }
+
   return (
     <BrowserRouter>
       <NavBar />
       <Route path="/" exact render={(routerProps)=> <Home {...routerProps} data={updated} /> }/>
-      <Route path="/blog/:id" render={(routerProps)=> <Blog {...routerProps} edited={editPost} data={blog} /> }/>
+      <Route path="/blog/:id" render={(routerProps)=> <Blog {...routerProps} editedImg={editCover} edited={editPost} data={blog} /> }/>
       <Route path="/new" exact render = {(routerProps)=> <NewBlogPost {...routerProps}  /> }/>
-      <Route path="/edit/:id" exact render={(routerProps)=> <EditBlogPost {...routerProps} data={blog} edited={editedpost}/> }/>
+      <Route path="/edit/:id" exact render={(routerProps)=> <EditBlogPost {...routerProps} data={blog} edited={editedpost} editedImg={editedImgcover}/> }/>
       <Footer />
     </BrowserRouter>
   );

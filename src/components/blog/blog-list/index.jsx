@@ -1,22 +1,21 @@
 import React, { Component } from "react";
 import { Row, Col } from "react-bootstrap";
 import BlogItem from "../blog-item";
-import posts from "../../../data/posts.json";
-import { BACKEND_URL } from "../../../const/env";
+
+const {REACT_APP_BACKEND_URL} = process.env
 export default class BlogList extends Component {
 
   state ={
     blogs:[]
   }
 
-  url = 'https://m5-blogpost.herokuapp.com/blogs'
+  url = `${REACT_APP_BACKEND_URL}/blogs`
 
   componentDidMount = ()=>{
     this.fetchBlogs()
   }
 
   fetchBlogs = async ()=>{
-    console.log(BACKEND_URL);
     try {
       const response = await fetch(this.url)
       const blogsData = await response.json()

@@ -1,12 +1,16 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { createRef } from "react";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import { Container, Form, Button } from "react-bootstrap";
-import { BACKEND_URL } from "../../const/env";
 import "./style.css";
 
+const {REACT_APP_BACKEND_URL} = process.env
+
  class EditBlogPost extends Component {
+
+  ref = createRef()
 
   state={
     blog:{
@@ -25,7 +29,7 @@ import "./style.css";
     }
   }
 
-  url = 'https://m5-blogpost.herokuapp.com/blogs'
+  url = `${REACT_APP_BACKEND_URL}/blogs`
 
   id=this.props.match.params.id
 
@@ -34,7 +38,7 @@ import "./style.css";
     console.log('id', id);
     console.log(this.props.data);
     const blog = this.props.data.find((post) => post._id.toString() === id);
-    if (blog) {
+    if (blog) {      
       this.setState({ 
             blog:{
                 "category": blog.category,
@@ -57,17 +61,46 @@ import "./style.css";
   }
 
   editBlog = async (e)=>{
-      e.preventDefault()
+    e.preventDefault()
+    let formData = new FormData()
+    formData.append('cover', this.state.blog.image)
+
     try {
       const response = await fetch(`${this.url}/${this.id}`,{
         method:"PUT",
-        body: JSON.stringify(this.state.blog),
+        body: JSON.stringify({
+          category:this.state.blog.category,
+          title:this.state.blog.title,
+          cover:this.state.blog.cover,
+          content:this.state.blog.content,
+          author:{
+            name:this.state.blog.author.name,
+            avatar: this.state.blog.author.avatar
+          }
+        }),
         headers:{
           "content-type": "application/json"
         }
       })
       const data = await response.json()
       if(response.ok){
+        if(this.state.blog.image){
+          try {
+            const postCover = await fetch(`${this.url}/${this.id}/uploadCover`,{
+              method:'POST',
+              body: formData,
+            })
+            console.log(await postCover.json());
+            if(postCover.ok){
+              const coverData = await postCover.json()
+              this.props.editedImg(coverData)
+              console.log(coverData);
+            }
+            
+          } catch (error) {
+            console.log('error uploading cover image');
+          }
+        }
         this.props.edited(data)
         alert('blog post is successfully edited')
         this.setState({
@@ -103,7 +136,31 @@ import "./style.css";
             placeholder="Title" />
           </Form.Group>
 
-          <Form.Group  className="mt-3">
+          <label className="p-0 d-flex mt-2" for="image">                                     
+            <input 
+              onClick={(e)=> {e.stopPropagation()
+                      return true}}  
+              hidden
+              type="file"
+              id="image"
+              ref={this.ref}
+              /* id="image" */
+              onChange={(e) => {this.setState({
+                        blog:{...this.state.blog, 
+                        image: e.target.files[0]}
+                      })
+                      console.log(e.target.files[0])}}
+            />
+          </label> 
+          <Button
+            onClick={()=> this.ref.current.click()}
+            variant="dark"
+            className="mt-3"
+          >
+            Upload Cover
+          </Button>    
+
+          {/* <Form.Group  className="mt-3">
             <Form.Label>Cover Image</Form.Label>
             <Form.Control
             required 
@@ -118,7 +175,7 @@ import "./style.css";
             })}
             size="lg" 
             placeholder="Link" />
-          </Form.Group>
+          </Form.Group> */}
 
        {/*  <div className="d-flex flex-row">
         <div>

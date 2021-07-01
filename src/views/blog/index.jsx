@@ -4,9 +4,10 @@ import { Container, Image, Button, Form, Tabs, Tab, Card } from "react-bootstrap
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
 import BlogAuthor from "../../components/blog/blog-author";
-import { BACKEND_URL } from "../../const/env";
 /* import { AvatarGenerator } from 'random-avatar-generator'; */
 import "./styles.css";
+
+const {REACT_APP_BACKEND_URL} = process.env
 class Blog extends Component {
 
   state = {
@@ -27,7 +28,7 @@ class Blog extends Component {
     loading: true,
   };
 
-  url = 'https://m5-blogpost.herokuapp.com/blogs'
+  url = `${REACT_APP_BACKEND_URL}/blogs`
 
     componentDidUpdate =(prevProps, prevState)=>{
       console.log('this state deletedCOMMENTS', this.state.deletedComment);
@@ -43,7 +44,8 @@ class Blog extends Component {
     if(this.state.nextPage){
       window.location.replace('http://localhost:3000')
     }
-  } 
+  }
+  
 
  /*  AvatarGenerator = ()=>{
     const generator = new AvatarGenerator()
@@ -136,14 +138,17 @@ class Blog extends Component {
     console.log('id', id);
     console.log(this.props.data);
     const blog = this.props.data.find((post) => post._id.toString() === id);
-     if(this.props.edited){
+     if(this.props.edited || this.props.editedImg){
+       window.location.reload()
+       console.log('editedimg', this.props.editedImg);
+
       this.setState({
         ...this.state,
         blog: this.props.edited,
         loading:false
       })
     }
-    else if (!this.props.edited && blog) {
+    else if ((!this.props.edited && !this.props.editedImg) && blog) {
       this.setState({
         ...this.state, 
         blog, 
@@ -250,8 +255,21 @@ class Blog extends Component {
       return (
         <div className="blog-details-root">
           <Container>
-            <Image className="blog-details-cover" src={blog.cover} fluid />
-            <h1 className="blog-details-title">{blog.title}</h1>
+            <Image className="blog-details-cover" src={this.state.blog && blog.cover} fluid />
+            <div className="d-flex justify-content-between">
+              <div>
+                  <h1 className="blog-details-title">{blog.title}</h1>
+
+              </div>
+              <div>
+                  <Button variant="info" href={`${this.url}/${this.props.match.params.id}/PDFDownload`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-save" viewBox="0 0 16 16">
+                    <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/>
+                    </svg>
+                </Button>
+              </div>
+           
+            </div>
 
             <div className="blog-details-container">
               <div className="blog-details-author">
@@ -275,13 +293,13 @@ class Blog extends Component {
                   </Link> 
               </div>
               <div>
-                <Link>
+           
                     <Button
                       onClick={(e)=>this.deleteBlog(e)} 
                       variant="danger">
                         Delete
                       </Button>
-                  </Link>
+                  
                    
               </div>
             </div> 
